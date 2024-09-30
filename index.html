@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical Invoice Table</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        th {
+            cursor: pointer;
+        }
+        #toolbar {
+            margin-bottom: 20px;
+        }
+        #toolbar button {
+            margin-right: 10px;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="my-4">Chemical Supplies Table</h1>
+
+    <!-- Toolbar with buttons for row operations -->
+    <div id="toolbar">
+        <button id="addRow" class="btn btn-primary">Add Row</button>
+        <button id="moveUp" class="btn btn-secondary">Move Up</button>
+        <button id="moveDown" class="btn btn-secondary">Move Down</button>
+        <button id="deleteRow" class="btn btn-danger">Delete Row</button>
+        <button id="refresh" class="btn btn-info">Refresh Data</button>
+        <button id="saveData" class="btn btn-success">Save Data</button>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th onclick="sortTable(0)">ID</th>
+                <th onclick="sortTable(1)">Chemical Name</th>
+                <th onclick="sortTable(2)">Vendor</th>
+                <th onclick="sortTable(3)">Density</th>
+                <th onclick="sortTable(4)">Viscosity</th>
+                <th onclick="sortTable(5)">Packaging</th>
+                <th onclick="sortTable(6)">Pack Size</th>
+                <th onclick="sortTable(7)">Unit</th>
+                <th onclick="sortTable(8)">Quantity</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="invoice-table">
+            <!-- Data will be dynamically populated here -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Edit Chemical Details</h2>
+        <form id="editForm">
+            <div class="form-group">
+                <label for="editChemicalName">Chemical Name</label>
+                <input type="text" id="editChemicalName" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="editVendor">Vendor</label>
+                <input type="text" id="editVendor" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="editDensity">Density</label>
+                <input type="number" id="editDensity" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="editViscosity">Viscosity</label>
+                <input type="number" id="editViscosity" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="editPackaging">Packaging</label>
+                <input type="text" id="editPackaging" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="editPackSize">Pack Size</label>
+                <input type="number" id="editPackSize" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="editUnit">Unit</label>
+                <input type="text" id="editUnit" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="editQuantity">Quantity</label>
+                <input type="number" id="editQuantity" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let data = [
+        { id: 1, chemicalName: "Ammonium Persulfate", vendor: "LG Chem", density: 3525.92, viscosity: 60.63, packaging: "Bag", packSize: 100, unit: "kg", quantity: 6495.18 },
+        { id: 2, chemicalName: "Caustic Potash", vendor: "Formosa", density: 3172.15, viscosity: 48.22, packaging: "Bag", packSize: 100, unit: "kg", quantity: 8751.90 },
+        { id: 3, chemicalName: "Dimethylaminopropylamino", vendor: "LG Chem", density: 8435.37, viscosity: 12.62, packaging: "Barrel", packSize: 75, unit: "L", quantity: 5964.61 },
+        // Add more chemicals as needed...
+    ];
+
+    let selectedRow = null;
+    let editIndex = null;
+    let sortDirection = false;
+
+    // Populate table initially
+    function populateTable() {
+        const table = document.getElementById('invoice-table');
+        table.innerHTML = ''; // Clear table
+        data.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.id}</td>
+                <td>${row.chemicalName}</td>
+                <td>${row.vendor}</td>
+                <td>${row.density}</td>
+                <td>${row.viscosity}</td>
+                <td>${row.packaging}</td>
+                <td>${row.packSize}</td>
+                <td>${row.unit}</td>
+                <td>${row.quantity}</td>
+                <td><button class="btn btn-warning btn-sm" onclick="editRow(${index})">Edit</button></td>
+            `;
+            tr.onclick = () => selectRow(tr, index);
+            table.appendChild(tr);
+        });
+    }
+
+    // Select row
+    function selectRow(row, index) {
+        selectedRow = row;
+        editIndex = index;
+        Array.from(document.querySelectorAll('tr')).forEach(tr => tr.classList.remove('table-active'));
+        row.classList.add('table-active');
+    }
+
+    // Sort table
+    function sortTable(columnIndex) {
+        sortDirection = !sortDirection;
+        data.sort((a, b) => {
+            const valueA = Object.values(a)[columnIndex];
+            const valueB = Object.values(b)[columnIndex];
+            return sortDirection ? (valueA > valueB ? 1 : -1) : (valueA < valueB ? 1 : -1);
+        });
+        populateTable();
+    }
+
+    // Add row
+    document.getElementById('addRow').addEventListener('click', () => {
+        const newRow = { id: data.length + 1, chemicalName: "New Chemical", vendor: "Vendor", density: 0, viscosity: 0, packaging: "N/A", packSize: 0, unit: "kg", quantity: 0 };
+        data.push(newRow);
+        populateTable();
+    });
+
+    // Move row up
+    document.getElementById('moveUp').addEventListener('click', () => {
+        if (editIndex > 0) {
+            [data[editIndex], data[editIndex - 1]] = [data[editIndex - 1], data[editIndex]];
+            editIndex--;
+            populateTable();
+        }
+    });
+
+    // Move row down
+    document.getElementById('moveDown').addEventListener('click', () => {
+        if (editIndex < data.length - 1) {
+            [data[editIndex], data[editIndex + 1]] = [data[editIndex + 1], data[editIndex]];
+            editIndex++;
+            populateTable();
+        }
+    });
+
+    // Delete row
+    document.getElementById('deleteRow').addEventListener('click', () => {
+        if (editIndex !== null) {
+            data.splice(editIndex, 1);
+            editIndex = null;
+            populateTable();
+        }
+    });
+
+    // Refresh data (reload from localStorage)
+    document.getElementById('refresh').addEventListener('click', () => {
+        const savedData = JSON.parse(localStorage.getItem('tableData'));
+        if (savedData) {
+            data = savedData;
+        }
+        populateTable();
+    });
+
+    // Save data to localStorage
+    document.getElementById('saveData').addEventListener('click', () => {
+        localStorage.setItem('tableData', JSON.stringify(data));
+        alert('Data saved successfully!');
+    });
+
+    // Edit row
+    function editRow(index) {
+        const chemical = data[index];
+        document.getElementById('editChemicalName').value = chemical.chemicalName;
+        document.getElementById('editVendor').value = chemical.vendor;
+        document.getElementById('editDensity').value = chemical.density;
+        document.getElementById('editViscosity').value = chemical.viscosity;
+        document.getElementById('editPackaging').value = chemical.packaging;
+        document.getElementById('editPackSize').value = chemical.packSize;
+        document.getElementById('editUnit').value = chemical.unit;
+        document.getElementById('editQuantity').value = chemical.quantity;
+
+        // Show modal
+        document.getElementById('editModal').style.display = 'block';
+        editIndex = index;
+    }
+
+    // Close modal
+    document.querySelector('.close').addEventListener('click', () => {
+        document.getElementById('editModal').style.display = 'none';
+    });
+
+    // Save edited row
+    document.getElementById('editForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const updatedChemical = {
+            id: data[editIndex].id,
+            chemicalName: document.getElementById('editChemicalName').value,
+            vendor: document.getElementById('editVendor').value,
+            density: document.getElementById('editDensity').value,
+            viscosity: document.getElementById('editViscosity').value,
+            packaging: document.getElementById('editPackaging').value,
+            packSize: document.getElementById('editPackSize').value,
+            unit: document.getElementById('editUnit').value,
+            quantity: document.getElementById('editQuantity').value
+        };
+        data[editIndex] = updatedChemical;
+        populateTable();
+        document.getElementById('editModal').style.display = 'none';
+    });
+
+    // Initial populate
+    populateTable();
+</script>
+</body>
+</html>
