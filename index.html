@@ -91,35 +91,35 @@
         <form id="editForm">
             <div class="form-group">
                 <label for="editChemicalName">Chemical Name</label>
-                <input type="text" id="editChemicalName" class="form-control">
+                <input type="text" id="editChemicalName" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="editVendor">Vendor</label>
-                <input type="text" id="editVendor" class="form-control">
+                <input type="text" id="editVendor" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="editDensity">Density</label>
-                <input type="number" id="editDensity" class="form-control">
+                <input type="number" id="editDensity" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="editViscosity">Viscosity</label>
-                <input type="number" id="editViscosity" class="form-control">
+                <input type="number" id="editViscosity" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="editPackaging">Packaging</label>
-                <input type="text" id="editPackaging" class="form-control">
+                <input type="text" id="editPackaging" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="editPackSize">Pack Size</label>
-                <input type="number" id="editPackSize" class="form-control">
+                <input type="number" id="editPackSize" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="editUnit">Unit</label>
-                <input type="text" id="editUnit" class="form-control">
+                <input type="text" id="editUnit" class="form-control" required>
             </div>
             <div class="form-group">
                 <label for="editQuantity">Quantity</label>
-                <input type="number" id="editQuantity" class="form-control">
+                <input type="number" id="editQuantity" class="form-control" required>
             </div>
             <button type="submit" class="btn btn-primary">Save</button>
         </form>
@@ -182,7 +182,17 @@
 
     // Add row
     document.getElementById('addRow').addEventListener('click', () => {
-        const newRow = { id: data.length + 1, chemicalName: "New Chemical", vendor: "Vendor", density: 0, viscosity: 0, packaging: "N/A", packSize: 0, unit: "kg", quantity: 0 };
+        const newRow = {
+            id: data.length + 1, 
+            chemicalName: "New Chemical", 
+            vendor: "Vendor", 
+            density: 0, 
+            viscosity: 0, 
+            packaging: "N/A", 
+            packSize: 0, 
+            unit: "kg", 
+            quantity: 0 
+        };
         data.push(newRow);
         populateTable();
     });
@@ -258,12 +268,12 @@
             id: data[editIndex].id,
             chemicalName: document.getElementById('editChemicalName').value,
             vendor: document.getElementById('editVendor').value,
-            density: document.getElementById('editDensity').value,
-            viscosity: document.getElementById('editViscosity').value,
+            density: parseFloat(document.getElementById('editDensity').value),
+            viscosity: parseFloat(document.getElementById('editViscosity').value),
             packaging: document.getElementById('editPackaging').value,
-            packSize: document.getElementById('editPackSize').value,
+            packSize: parseFloat(document.getElementById('editPackSize').value),
             unit: document.getElementById('editUnit').value,
-            quantity: document.getElementById('editQuantity').value
+            quantity: parseFloat(document.getElementById('editQuantity').value)
         };
         data[editIndex] = updatedChemical;
         populateTable();
