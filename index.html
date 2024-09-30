@@ -244,12 +244,12 @@
         const chemical = data[index];
         document.getElementById('editChemicalName').value = chemical.chemicalName;
         document.getElementById('editVendor').value = chemical.vendor;
-        document.getElementById('editDensity').value = chemical.density;
-        document.getElementById('editViscosity').value = chemical.viscosity;
+        document.getElementById('editDensity').value = chemical.density.toFixed(2); // Ensure 2 decimal places
+        document.getElementById('editViscosity').value = chemical.viscosity.toFixed(2); // Ensure 2 decimal places
         document.getElementById('editPackaging').value = chemical.packaging;
-        document.getElementById('editPackSize').value = chemical.packSize;
+        document.getElementById('editPackSize').value = chemical.packSize.toFixed(2); // Ensure 2 decimal places
         document.getElementById('editUnit').value = chemical.unit;
-        document.getElementById('editQuantity').value = chemical.quantity;
+        document.getElementById('editQuantity').value = chemical.quantity.toFixed(2); // Ensure 2 decimal places
 
         // Show modal
         document.getElementById('editModal').style.display = 'block';
@@ -268,12 +268,12 @@
             id: data[editIndex].id,
             chemicalName: document.getElementById('editChemicalName').value,
             vendor: document.getElementById('editVendor').value,
-            density: parseFloat(document.getElementById('editDensity').value),
-            viscosity: parseFloat(document.getElementById('editViscosity').value),
+            density: parseFloat(document.getElementById('editDensity').value) || 0,
+            viscosity: parseFloat(document.getElementById('editViscosity').value) || 0,
             packaging: document.getElementById('editPackaging').value,
-            packSize: parseFloat(document.getElementById('editPackSize').value),
+            packSize: parseFloat(document.getElementById('editPackSize').value) || 0,
             unit: document.getElementById('editUnit').value,
-            quantity: parseFloat(document.getElementById('editQuantity').value)
+            quantity: parseFloat(document.getElementById('editQuantity').value) || 0
         };
         data[editIndex] = updatedChemical;
         populateTable();
